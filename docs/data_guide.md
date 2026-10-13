@@ -1,0 +1,23 @@
+# Backup / Restore・データ管理ガイド
+
+文書更新日：2026年10月13日。
+
+## 保存とBackup
+
+WindowsのDocuments内anniversary_keeper.sqliteをSQLCipherで暗号化して保存し、鍵はWindowsユーザーに紐付くDPAPIと資格情報マネージャーで保護します。開いているDBの手動コピーを通常backupの代替にしないでください。
+
+Settingsのbackup画面でDocuments直下へ.akbackupを作成します。新規backupはpasswordで保護したformat2です。passwordは本人が管理し開発者へ送らないでください。紛失時の復号を保証できません。backupにはTrash内のデータも含まれ得ます。
+
+通常Restore選択先もDocuments直下です。外部へbackupを保管する場合は作成完了後のファイルを管理し、Restore時はDocuments直下へ戻して選択してください。同期ソフト・共有folder等による転送や履歴保存は別途管理してください。
+
+## Restore
+
+通常restore画面でbackupとpasswordを指定し、previewを確認して置換を承認します。認証・暗号stage・DB検証後、既存DBを安全に置換して再openします。現在のDBがbackup時点へ置き換わり、差分マージではありません。現状も残したい場合は先に別名でbackupしてください。
+
+password不一致、破損、未対応形式・schema、整合性不良は拒否します。失敗時にDBやCredentialを削除して再試行しないでください。安全な状態を保ち、エラーを窓口へ相談してください。復元後は設定に従い通知を再構築します。過去backupに含まれる削除済みデータは再出現し得ます。
+
+## 削除・アンインストール
+
+通常削除はTrashへ移動します。完全削除後は現在DBからアプリ内復元できませんが、secure eraseではなく、過去backupや同期履歴が消えるわけではありません。
+
+アンインストールだけでDocuments DB・外部backup・資格情報・同期履歴を一括消去したことにはなりません。再インストール時は残っているDBと資格情報を使用します。DBまたは資格情報の片方だけを削除すると不整合で起動を拒否する場合があります。手動削除・PC移行の前に必要なbackupとpasswordを確保し、方法が不明なら窓口へ相談してください。

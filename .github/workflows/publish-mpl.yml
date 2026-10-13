@@ -1,0 +1,33 @@
+name: 固定dbus対応sourceの単発公開
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-mpl.yml', 'release-source/dbus-0.7.15-source.zip']
+permissions:
+  contents: write
+concurrency:
+  group: publish-dbus-0.7.15-r1
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'kirica-9029/Anniversary'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: 固定archive検証とRelease公開（既存Release上書き禁止）
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=third-party-dbus-0.7.15-r1
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo '既存Releaseを保持し、再公開しません。'
+            exit 1
+          fi
+          gh api "repos/$GH_REPO/contents/release-source/dbus-0.7.15-source.zip?ref=$GITHUB_SHA" -H 'Accept: application/vnd.github.raw+json' > dbus-0.7.15-source.zip
+          test "$(stat -c%s dbus-0.7.15-source.zip)" = 78253
+          printf '%s  %s\n' 7c6a1432b1fbef42f41d0ca3e0aeeabe2d3502798ad11ebc230f8f51625a6061 dbus-0.7.15-source.zip | sha256sum -c -
+          python3 -c 'import zipfile; z=zipfile.ZipFile("dbus-0.7.15-source.zip"); assert len(z.infolist()) == 42; assert z.testzip() is None; assert "dbus-0.7.15/LICENSE" in z.namelist()'
+          gh release create "$tag" dbus-0.7.15-source.zip --target "$GITHUB_SHA" --latest=false --title 'dbus 0.7.15 corresponding source (MPL-2.0, unmodified)' --notes 'Anniversary Keeper採用dbus 0.7.15のcorresponding Source Code Form。MPL-2.0、unmodified（ZIP包装のみ）。42 entries / 78253 bytes / SHA-256 7c6a1432b1fbef42f41d0ca3e0aeeabe2d3502798ad11ebc230f8f51625a6061。LICENSE同梱。アプリ本体sourceの公開ではありません。'
