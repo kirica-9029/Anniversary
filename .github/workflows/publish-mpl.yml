@@ -26,7 +26,7 @@ jobs:
             echo '既存Releaseを保持し、再公開しません。'
             exit 1
           fi
-          gh api "repos/$GH_REPO/contents/release-source/dbus-0.7.15-source.zip?ref=$GITHUB_SHA" -H 'Accept: application/vnd.github.raw+json' > dbus-0.7.15-source.zip
+          curl --fail --silent --show-error --location "https://raw.githubusercontent.com/$GH_REPO/$GITHUB_SHA/release-source/dbus-0.7.15-source.zip" --output dbus-0.7.15-source.zip
           test "$(stat -c%s dbus-0.7.15-source.zip)" = 78253
           printf '%s  %s\n' 7c6a1432b1fbef42f41d0ca3e0aeeabe2d3502798ad11ebc230f8f51625a6061 dbus-0.7.15-source.zip | sha256sum -c -
           python3 -c 'import zipfile; z=zipfile.ZipFile("dbus-0.7.15-source.zip"); assert len(z.infolist()) == 42; assert z.testzip() is None; assert "dbus-0.7.15/LICENSE" in z.namelist()'
